@@ -37,8 +37,10 @@ def checkCommand(inputCommand):
         listNotDone()
     elif re.search("^list in-progress$", inputCommand):
         listInProgress()
+    elif re.search("^quit$", inputCommand) or re.search("^exit$", inputCommand):
+        quit()
     else:
-        print("false")
+        print("invalid input")
 
 def nextId():      
     return next(id_generator)
@@ -76,6 +78,7 @@ def addTask(inputCommand):
 
     with open(jsonFileName, "w") as file:
         json.dump(existing_data, file)
+        print(f"Task added successfully (ID: {taskId})")
 
         
 def updateTask():
