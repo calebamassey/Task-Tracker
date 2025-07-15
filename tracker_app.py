@@ -94,7 +94,15 @@ def markDone():
     print()
 
 def listAllTasks():
-    print()
+    with open(jsonFileName, 'r') as file:
+        try:
+            existing_data = json.load(file)
+            if not isinstance(existing_data, list):
+                existing_data = []
+        except json.JSONDecodeError:
+            existing_data = []
+
+    print(existing_data)
 
 def listAllDone():
     print()
