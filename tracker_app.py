@@ -81,16 +81,30 @@ def addTask(inputCommand):
         print(f"Task added successfully (ID: {taskId})")
 
         
-def updateTask():
+def updateTask(inputCommand):
+    parsedCommand = inputCommand.split()
+    with open(jsonFileName, 'r') as file:
+        try:
+            existing_data = json.load(file)
+            if not isinstance(existing_data, list):
+                existing_data = []
+            else:
+                for data in existing_data:
+                    if int(data['taskId']) == int(parsedCommand[1]):
+                        data['taskDescription'] = parsedCommand[2]
+                        data['lastUpdateDate'] = date.today().isoformat()
+                        print(f"Task {data['taskId']} has been updated.")
+
+        except json.JSONDecodeError:
+            existing_data = []
+
+def deleteTask(inputCommand):
     print()
 
-def deleteTask():
+def markInProgress(inputCommand):
     print()
 
-def markInProgress():
-    print()
-
-def markDone():
+def markDone(inputCommand):
     print()
 
 def listAllTasks():
@@ -101,8 +115,8 @@ def listAllTasks():
                 existing_data = []
         except json.JSONDecodeError:
             existing_data = []
-
-    print(existing_data)
+    for data in existing_data:
+        print(data)
 
 def listAllDone():
     with open(jsonFileName, 'r') as file:
