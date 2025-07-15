@@ -11,7 +11,7 @@ id_generator = itertools.count()
 def checkJSONFile():
 
     if os.path.exists(jsonFileName):
-        print("Json File alreday exists")
+        print("Json File already exists")
         return True
     else:
         with open(jsonFileName, "w") as file:
@@ -34,7 +34,7 @@ def checkCommand(inputCommand):
     elif re.search("^list done$", inputCommand):
         listAllDone()
     elif re.search("^list todo$", inputCommand):
-        listNotDone()
+        listToDo()
     elif re.search("^list in-progress$", inputCommand):
         listInProgress()
     elif re.search("^quit$", inputCommand) or re.search("^exit$", inputCommand):
@@ -105,11 +105,41 @@ def listAllTasks():
     print(existing_data)
 
 def listAllDone():
-    print()
+    with open(jsonFileName, 'r') as file:
+        try:
+            existing_data = json.load(file)
+            if not isinstance(existing_data, list):
+                existing_data = []
+            else:
+                for data in existing_data:
+                    if data['taskStatus'] == "done":
+                        print (data)
+        except json.JSONDecodeError:
+            existing_data = []
 
-def listNotDone():
-    print()
+def listToDo():
+    with open(jsonFileName, 'r') as file:
+        try:
+            existing_data = json.load(file)
+            if not isinstance(existing_data, list):
+                existing_data = []
+            else:
+                for data in existing_data:
+                    if data['taskStatus'] != "done":
+                        print (data)
+        except json.JSONDecodeError:
+            existing_data = []
 
 def listInProgress():
-    print()
+    with open(jsonFileName, 'r') as file:
+        try:
+            existing_data = json.load(file)
+            if not isinstance(existing_data, list):
+                existing_data = []
+            else:
+                for data in existing_data:
+                    if data['taskStatus'] == "in-progress":
+                        print (data)
+        except json.JSONDecodeError:
+            existing_data = []
 
