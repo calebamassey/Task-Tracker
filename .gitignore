@@ -413,3 +413,9 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+
+
+# Prevent JSON file and outline.txt from being added to Gitlab
+*.json
+*.txt
