@@ -2,6 +2,7 @@ import os
 import json
 import re
 import itertools
+import shlex
 from datetime import date
 
 taskList = []
@@ -42,61 +43,90 @@ def checkCommand(inputCommand):
     else:
         print("invalid input")
 
-def nextId():      
-    return next(id_generator)
+def nextId():
+    used_ids = set()
+
+    if os.path.exists(jsonFileName):
+        with open(jsonFileName, 'r') as file:
+            try:
+                data = json.load(file)
+                if isinstance(data, list):
+                    used_ids = {int(task["taskId"]) for task in data if "taskId" in task}
+            except json.JSONDecodeError:
+                pass
+
+    # Start counting from 0, find the first unused ID
+    for i in itertools.count():
+        if i not in used_ids:
+            return i
 
 def addTask(inputCommand):
 
     with open(jsonFileName, 'r') as file:
         try:
-            existing_data = json.load(file)
-            if not isinstance(existing_data, list):
-                existing_data = []
+            existingData = json.load(file)
+            if not isinstance(existingData, list):
+                existingData = []
         except json.JSONDecodeError:
-            existing_data = []
+            existingData = []
 
     taskId = nextId()
     
-    parseCommand =  re.split("\"*\"", inputCommand)
-    taskDescription = parseCommand[1]
+    parseCommand =  shlex.split(inputCommand)
 
-    taskStatus = "new"
+    if len(parseCommand) != 2:
+        print("Incorrect number of arguments: command must be \"add task_description\"")
+    else:
+        taskDescription = parseCommand[1]
 
-    createdDate = date.today().isoformat()
-    lastUpdateDate = date.today().isoformat()
+        taskStatus = "new"
+
+        createdDate = date.today().isoformat()
+        lastUpdateDate = date.today().isoformat()
 
 
-    newTask = {
-        "taskId": taskId,
-        "taskDescription": taskDescription,
-        "taskStatus": taskStatus,
-        "createdDate": createdDate,
-        "lastUpdateDate": lastUpdateDate
-    }
+        newTask = {
+            "taskId": taskId,
+            "taskDescription": taskDescription,
+            "taskStatus": taskStatus,
+            "createdDate": createdDate,
+            "lastUpdateDate": lastUpdateDate
+        }
 
-    existing_data.append(newTask)
+        existingData.append(newTask)
 
-    with open(jsonFileName, "w") as file:
-        json.dump(existing_data, file)
-        print(f"Task added successfully (ID: {taskId})")
-
+        with open(jsonFileName, "w") as file:
+            json.dump(existingData, file)
+            print(f"Task added successfully (ID: {taskId})")
+        
         
 def updateTask(inputCommand):
-    parsedCommand = inputCommand.split()
-    with open(jsonFileName, 'r') as file:
-        try:
-            existing_data = json.load(file)
-            if not isinstance(existing_data, list):
-                existing_data = []
-            else:
-                for data in existing_data:
-                    if int(data['taskId']) == int(parsedCommand[1]):
-                        data['taskDescription'] = parsedCommand[2]
-                        data['lastUpdateDate'] = date.today().isoformat()
-                        print(f"Task {data['taskId']} has been updated.")
 
-        except json.JSONDecodeError:
-            existing_data = []
+    parseCommand = shlex.split(inputCommand)
+    if len(parseCommand) != 3:
+        print("Incorrect number of arguments: command must be \"update taskId taskDescription\"")
+    else:
+        with open(jsonFileName, 'r') as file:
+            try:
+                existingData = json.load(file)
+                if not isinstance(existingData, list):
+                    existingData = []
+                else:
+                    try:
+                        updated = False
+                        for data in existingData:
+                            if int(data['taskId']) == int(parseCommand[1]):
+                                data['taskDescription'] = parseCommand[2]
+                                data['lastUpdateDate'] = date.today().isoformat()
+                                with open(jsonFileName, "w") as file:
+                                    json.dump(existingData, file)
+                                    print(f"Task has updated successfully (ID: {data['taskId']})")      
+                        if updated == False:
+                            print(f"{parseCommand[1]} is an invalid ID")
+                    except(ValueError):
+                            print(f"{parseCommand[1]} is an invalid ID")
+            except json.JSONDecodeError:
+                existingData = []
 
 def deleteTask(inputCommand):
     print()
@@ -110,50 +140,50 @@ def markDone(inputCommand):
 def listAllTasks():
     with open(jsonFileName, 'r') as file:
         try:
-            existing_data = json.load(file)
-            if not isinstance(existing_data, list):
-                existing_data = []
+            existingData = json.load(file)
+            if not isinstance(existingData, list):
+                existingData = []
         except json.JSONDecodeError:
-            existing_data = []
-    for data in existing_data:
+            existingData = []
+    for data in existingData:
         print(data)
 
 def listAllDone():
     with open(jsonFileName, 'r') as file:
         try:
-            existing_data = json.load(file)
-            if not isinstance(existing_data, list):
-                existing_data = []
+            existingData = json.load(file)
+            if not isinstance(existingData, list):
+                existingData = []
             else:
-                for data in existing_data:
+                for data in existingData:
                     if data['taskStatus'] == "done":
                         print (data)
         except json.JSONDecodeError:
-            existing_data = []
+            existingData = []
 
 def listToDo():
     with open(jsonFileName, 'r') as file:
         try:
-            existing_data = json.load(file)
-            if not isinstance(existing_data, list):
-                existing_data = []
+            existingData = json.load(file)
+            if not isinstance(existingData, list):
+                existingData = []
             else:
-                for data in existing_data:
+                for data in existingData:
                     if data['taskStatus'] != "done":
                         print (data)
         except json.JSONDecodeError:
-            existing_data = []
+            existingData = []
 
 def listInProgress():
     with open(jsonFileName, 'r') as file:
         try:
-            existing_data = json.load(file)
-            if not isinstance(existing_data, list):
-                existing_data = []
+            existingData = json.load(file)
+            if not isinstance(existingData, list):
+                existingData = []
             else:
-                for data in existing_data:
+                for data in existingData:
                     if data['taskStatus'] == "in-progress":
                         print (data)
         except json.JSONDecodeError:
-            existing_data = []
+            existingData = []
 
