@@ -159,7 +159,33 @@ def deleteTask(inputCommand):
                 existingData = []
 
 def markInProgress(inputCommand):
-    print()
+
+    parseCommand = shlex.split(inputCommand)
+    if len(parseCommand) != 2:
+        print("Incorrect number of arguments: command must be \"delete taskId\"")
+    else:
+        with open(jsonFileName, 'r') as file:
+            try:
+                existingData = json.load(file)
+                if not isinstance(existingData, list):
+                    existingData = []
+                else:
+                    try:
+                        updated = False
+                        for data in existingData:
+                            if int(data['taskId']) == int(parseCommand[1]):
+                                data['taskStatus'] = 'in-progress'
+                                data['lastUpdateDate'] = date.today().isoformat()
+                                with open(jsonFileName, "w") as file:
+                                    json.dump(existingData, file)
+                                    print(f"Task Status has been updated to In Progress (ID: {data['taskId']})") 
+                                    updated = True     
+                        if updated == False:
+                            print(f"{parseCommand[1]} is an invalid ID")
+                    except(ValueError):
+                            print(f"{parseCommand[1]} is an invalid ID")
+            except json.JSONDecodeError:
+                existingData = []
 
 def markDone(inputCommand):
     print()
